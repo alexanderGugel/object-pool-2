@@ -1,23 +1,20 @@
-var UPDATE_MAX_ERROR = new Error('Can\'t set max to be less than inUse');
+var UPDATE_MAX_ERROR = new Error('Can\'t set max to be less than allocated');
 
 var ObjectPool = function(Constructor) {
     if (!(this instanceof ObjectPool)) return new ObjectPool(Constructor);
-    this.Constructor = Constructor;
-    this._inUse = [];
-    this._allocatedAvailable = [];
-    this._max = 10;
-    this._callbackQueue = [];
+    this._Constructor = Constructor;
+    this.reset();
 };
 
 function _schedule() {
     if (this._callbackQueue.length > 0) {
-        if (this._allocatedAvailable.length > 0) {
+        if (this._deallocated.length > 0) {
             var callback = this._callbackQueue.shift();
-            var instance = this._allocatedAvailable.shift();
-            this._inUse.push(instance);
+            var instance = this._deallocated.shift();
+            this._allocated.push(instance);
             callback.call(null, null, instance);
-        } else if (this._inUse.length < this._max) {
-            this._allocatedAvailable.push(new this.Constructor());
+        } else if (this._allocated.length < this._max) {
+            this._deallocated.push(new this._Constructor());
             _schedule.call(this);
         }
     }
@@ -30,9 +27,9 @@ ObjectPool.prototype.allocate = function(callback) {
 };
 
 ObjectPool.prototype.deallocate = function(instance) {
-    var index = this._inUse.indexOf(instance);
-    if (this._inUse.splice(index, 1).length > 0) {
-        this._allocatedAvailable.push(instance);
+    var index = this._allocated.indexOf(instance);
+    if (this._allocated.splice(index, 1).length > 0) {
+        this._deallocated.push(instance);
         _schedule.call(this);
         return true;
     } else {
@@ -40,10 +37,17 @@ ObjectPool.prototype.deallocate = function(instance) {
     }
 };
 
+ObjectPool.prototype.reset = function(max) {
+    this._allocated = [];
+    this._deallocated = [];
+    this._max = max || 10;
+    this._callbackQueue = [];
+};
+
 Object.defineProperties(ObjectPool.prototype, {
     inUse: {
         get: function() {
-            return this._inUse.length;
+            return this._allocated.length;
         }
     },
     available: {
@@ -61,8 +65,8 @@ Object.defineProperties(ObjectPool.prototype, {
             }
             this._max = max;
             var maxAllocatedAvailable = max - this.inUse;
-            while (maxAllocatedAvailable < this._allocatedAvailable.length) {
-                this._allocatedAvailable.pop();
+            while (maxAllocatedAvailable < this._deallocated.length) {
+                this._deallocated.pop();
             }
         }
     }

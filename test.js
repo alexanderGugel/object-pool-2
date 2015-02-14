@@ -52,3 +52,11 @@ test('multiple asynchronous instance allocations', function(t) {
     });
     op.deallocate(instance1);
 });
+
+test('methods', function(t) {
+    t.plan(3);
+    var op = ObjectPool();
+    t.ok(op.allocate instanceof Function);
+    t.ok(op.deallocate instanceof Function);
+    t.ok(op.reset instanceof Function);
+});
