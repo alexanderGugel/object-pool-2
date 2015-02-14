@@ -1,3 +1,5 @@
+[ ![Codeship Status for alexanderGugel/object-pool-2](https://codeship.com/projects/02dd73c0-9679-0132-935f-7a1406c9da98/status?branch=master)](https://codeship.com/projects/63039)
+
 # object-pool-2
 
 A constructor specific object pool implementation for asynchronous recycling of object allocations.
