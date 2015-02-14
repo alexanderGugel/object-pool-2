@@ -1,6 +1,6 @@
 {
   "name": "object-pool-2",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A constructor specific object pool implementation for asynchronous recycling of object allocations.",
   "main": "index.js",
   "scripts": {
